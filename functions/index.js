@@ -1,5 +1,7 @@
 import axios from "axios";
+import qs from "qs";
 import cron from "node-cron";
+import fs from "fs";
 import TelegramBot from "node-telegram-bot-api";
 const token = "1861135965:AAF8mvcKRHSC5ABbmh2avXGzaVANMT-YOEg";
 const bot = new TelegramBot(token, { polling: true });
@@ -5007,36 +5009,129 @@ const words = [
   "till",
 ];
 
-bot.on("message", (ctx) => {
-  const chatId = ctx.chat.id;
-  console.log("ctx", ctx);
-  var task = cron.schedule("* * * * * *", (e) => {
-    console.log(
-      "will execute every second until stopped",
-      new Date(e).toLocaleTimeString()
-    );
-    bot.sendMessage(chatId, new Date(e).toLocaleTimeString());
+const usersWorker = (chatId, randomWord, userName, msg) => {
+  fs.readFile("data.json", "utf8", (err, res) => {
+    const data = JSON.parse(res);
+    const currentUser = data?.users?.filter((user) => user.id == chatId);
+    const isUserExist = !!currentUser?.length;
+    if (isUserExist) {
+      if (!!!currentUser[0].words[randomWord]) {
+        getTranslatedWord(userName, chatId, randomWord, currentUser, data);
+      } else {
+        bot.sendMessage(
+          chatId,
+          `${randomWord} - ${currentUser[0].words[randomWord]}`
+        );
+      }
+    } else {
+      getTranslatedWord(
+        userName,
+        chatId,
+        randomWord,
+        currentUser,
+        data,
+        isUserExist
+      );
+    }
   });
+};
 
-  setTimeout(() => task.stop(), 5000);
+const getRandomInt = (max) => {
+  return Math.floor(Math.random() * max);
+};
+
+const getTranslatedWord = (
+  userName,
+  chatId,
+  word,
+  currentUser,
+  data,
+  isUserExist = true
+) => {
+  const options = {
+    method: "POST",
+    url: "https://google-translate1.p.rapidapi.com/language/translate/v2",
+    data: qs.stringify({
+      q: word,
+      source: "en",
+      target: "ru",
+    }),
+    headers: {
+      "content-type": "application/x-www-form-urlencoded",
+      "accept-encoding": "application/gzip",
+      "x-rapidapi-key": "f233d5920fmshc97df4a252342fap173dfajsnd1a7cbef1e85",
+      "x-rapidapi-host": "google-translate1.p.rapidapi.com",
+    },
+  };
+
+  axios
+    .request(options)
+    .then(function (response) {
+      const translatedWord =
+        response?.data?.data?.translations[0]?.translatedText;
+      if (isUserExist) {
+        currentUser[0].words[word] = translatedWord;
+      } else {
+        data?.users?.push({
+          id: chatId,
+          name: userName,
+          words: { [word]: translatedWord },
+        });
+      }
+
+      fs.writeFile("data.json", JSON.stringify(data, null, 4), function (err) {
+        if (err) {
+          return console.log("---------", err);
+        }
+        console.log("The file was saved!");
+      });
+      bot.sendMessage(
+        chatId,
+        `Привет ${userName}. Я ваш помощник, в изучении английских слов. У меня есть для вас интересная программа, которая поможет: 
+        -Узнать новые слова и их значения
+        -Запомнить эти слова
+        -Попробовать использовать их на практике
+        
+        Вот тебе первое слово: ${word} - ${translatedWord}
+        `
+      );
+    })
+    .catch(function (error) {
+      console.error("ERROR---------------", error);
+    });
+};
+
+bot.on("message", (ctx) => {
+  const chatId = ctx?.chat?.id;
+  const msg = ctx?.text;
+  const userName = ctx?.from?.first_name;
+  const randomWord = words[getRandomInt(words.length)];
+
+  switch (msg) {
+    case "/start":
+      usersWorker(chatId, randomWord, userName, msg);
+      break;
+    case "хто я?":
+      bot.sendMessage(
+        chatId,
+        `Ты ${userName}, и вот что ты нам написал: ${msg}`
+      );
+      break;
+
+    default:
+      bot.sendMessage(
+        chatId,
+        `Hi ${userName}, sorry I don't know what do you mean.`
+      );
+      break;
+  }
+  // var task = cron.schedule("* * * * * *", (e) => {
+  //   console.log(
+  //     "will execute every second until stopped",
+  //     new Date(e).toLocaleTimeString()
+  //   );
+  //   bot.sendMessage(chatId, new Date(e).toLocaleTimeString());
+  // });
+
+  // setTimeout(() => task.stop(), 5000);
 });
-// var options = {
-//   method: "POST",
-//   url: "https://google-translate1.p.rapidapi.com/language/translate/v2",
-//   headers: {
-//     "content-type": "application/x-www-form-urlencoded",
-//     "accept-encoding": "application/gzip",
-//     "x-rapidapi-key": "f233d5920fmshc97df4a252342fap173dfajsnd1a7cbef1e85",
-//     "x-rapidapi-host": "google-translate1.p.rapidapi.com",
-//   },
-//   data: { q: "Hello, world!", target: "ru", source: "en" },
-// };
-
-// axios
-//   .request(options)
-//   .then(function (response) {
-//     console.log(response.data);
-//   })
-//   .catch(function (error) {
-//     console.error(error);
-//   });

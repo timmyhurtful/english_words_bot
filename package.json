@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./functions/index.js",
+    "dev": "nodemon ./functions/index.js",
     "postinstall": "netlify-lambda install",
     "buildNetlify": "netlify-lambda build functions",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,10 +16,11 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
-    "node-cron": "^3.0.0",
-    "nodemon": "^2.0.7",
     "fs": "^0.0.1-security",
+    "netlify-lambda": "^1.6.0",
+    "node-cron": "^3.0.0",
     "node-telegram-bot-api": "^0.53.0",
-    "netlify-lambda": "^1.6.0"
+    "nodemon": "^2.0.7",
+    "qs": "^6.10.1"
   }
 }
