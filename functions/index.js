@@ -5015,7 +5015,7 @@ bot.on("message", (ctx) => {
       "will execute every second until stopped",
       new Date(e).toLocaleTimeString()
     );
-    bot.sendMessage(chatId, new Date(e).toLocaleTimeString());
+    return bot.sendMessage(chatId, new Date(e).toLocaleTimeString());
   });
 
   setTimeout(() => task.stop(), 5000);
