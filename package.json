@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "name": "bottrans",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "postinstall": "netlify-lambda install",
+    "buildNetlify": "netlify-lambda build functions",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devNetlify": "netlify-lambda serve functions"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "node-cron": "^3.0.0",
+    "nodemon": "^2.0.7",
+    "fs": "^0.0.1-security",
+    "node-telegram-bot-api": "^0.53.0",
+    "netlify-lambda": "^1.6.0"
+  }
+}
