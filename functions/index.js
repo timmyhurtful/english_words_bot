@@ -3,7 +3,7 @@ import cron from "node-cron";
 import TelegramBot from "node-telegram-bot-api";
 const token = "1861135965:AAF8mvcKRHSC5ABbmh2avXGzaVANMT-YOEg";
 const bot = new TelegramBot(token, { polling: true });
-
+//https://api.telegram.org/bot1861135965:AAF8mvcKRHSC5ABbmh2avXGzaVANMT-YOEg/setWebhook?url=https://gracious-raman-f3f27b.netlify.app/.netlify/functions/index
 const words = [
   "the",
   "be",
@@ -5015,7 +5015,7 @@ bot.on("message", (ctx) => {
       "will execute every second until stopped",
       new Date(e).toLocaleTimeString()
     );
-    return bot.sendMessage(chatId, new Date(e).toLocaleTimeString());
+    bot.sendMessage(chatId, new Date(e).toLocaleTimeString());
   });
 
   setTimeout(() => task.stop(), 5000);
